@@ -1,22 +1,4 @@
 #!/usr/bin/env python3
-"""
-═══════════════════════════════════════════════════════════════════════════════
-    DECODELABS CYBERSECURITY TRAINING - PROJECT 1
-    PASSWORD STRENGTH CHECKER - MASTER EDITION
-    Batch: 2026 | Powered by DecodeLabs
-═══════════════════════════════════════════════════════════════════════════════
-
-A comprehensive password validation tool featuring:
-- Command-Line Interface (CLI)
-- Graphical User Interface (GUI)
-- Interactive Demo Mode
-- Real-time Security Analysis
-- Industry-Standard Validation
-
-Author: DecodeLabs Training Participant
-Project: Password Strength Checker
-Status: Production Ready
-"""
 
 import re
 import string
@@ -31,10 +13,6 @@ try:
 except ImportError:
     GUI_AVAILABLE = False
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-# CORE PASSWORD ANALYSIS ENGINE
-# ═══════════════════════════════════════════════════════════════════════════
 
 class PasswordStrengthChecker:
     """
@@ -85,10 +63,7 @@ class PasswordStrengthChecker:
         score = 0
         feedback = []
         length = len(password)
-        
-        # ═══════════════════════════════════════════════════════════════
-        # CHECK 1: LENGTH VERIFICATION
-        # ═══════════════════════════════════════════════════════════════
+
         if length < self.min_length:
             feedback.append(f'❌ Too short: Use at least {self.min_length} characters')
         elif length >= self.strong_length:
@@ -213,10 +188,6 @@ class PasswordStrengthChecker:
             return 'WEAK', 'red'
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# COMMAND-LINE INTERFACE (CLI)
-# ═══════════════════════════════════════════════════════════════════════════
-
 class CLI_Interface:
     """Professional command-line interface for password checking"""
     
@@ -326,10 +297,6 @@ class CLI_Interface:
         print("═"*76 + "\n")
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# GRAPHICAL USER INTERFACE (GUI)
-# ═══════════════════════════════════════════════════════════════════════════
-
 if GUI_AVAILABLE:
     class GUI_Interface:
         """Premium graphical interface with real-time analysis"""
@@ -363,10 +330,8 @@ if GUI_AVAILABLE:
             
         def create_widgets(self):
             """Build all GUI components"""
-            # ═══════════════════════════════════════════════════════════
-            # HEADER SECTION
-            # ═══════════════════════════════════════════════════════════
-            header_frame = tk.Frame(self.root, bg=self.colors['primary'], height=100)
+     
+         header_frame = tk.Frame(self.root, bg=self.colors['primary'], height=100)
             header_frame.pack(fill=tk.X)
             header_frame.pack_propagate(False)
             
@@ -388,13 +353,9 @@ if GUI_AVAILABLE:
             )
             subtitle.pack()
             
-            # ═══════════════════════════════════════════════════════════
-            # MAIN CONTENT AREA
-            # ═══════════════════════════════════════════════════════════
-            content_frame = tk.Frame(self.root, bg=self.colors['bg'])
+        content_frame = tk.Frame(self.root, bg=self.colors['bg'])
             content_frame.pack(fill=tk.BOTH, expand=True, padx=25, pady=20)
             
-            # Password input
             input_label = tk.Label(
                 content_frame,
                 text="Enter Password to Analyze:",
@@ -432,9 +393,6 @@ if GUI_AVAILABLE:
             )
             show_btn.pack(side=tk.LEFT, padx=(12, 0))
             
-            # ═══════════════════════════════════════════════════════════
-            # STRENGTH INDICATOR
-            # ═══════════════════════════════════════════════════════════
             strength_frame = tk.Frame(content_frame, bg=self.colors['bg'])
             strength_frame.pack(fill=tk.X, pady=(0, 15))
             
@@ -462,7 +420,6 @@ if GUI_AVAILABLE:
             )
             self.score_label.pack(side=tk.LEFT)
             
-            # Progress bar
             self.progress = ttk.Progressbar(
                 content_frame,
                 length=700,
@@ -471,9 +428,6 @@ if GUI_AVAILABLE:
             )
             self.progress.pack(fill=tk.X, pady=(0, 20))
             
-            # ═══════════════════════════════════════════════════════════
-            # FEEDBACK AREA
-            # ═══════════════════════════════════════════════════════════
             feedback_label = tk.Label(
                 content_frame,
                 text="Security Analysis:",
@@ -495,9 +449,6 @@ if GUI_AVAILABLE:
             self.feedback_text.config(state=tk.DISABLED)
             self.show_initial_message()
             
-            # ═══════════════════════════════════════════════════════════
-            # ACTION BUTTONS
-            # ═══════════════════════════════════════════════════════════
             button_frame = tk.Frame(content_frame, bg=self.colors['bg'])
             button_frame.pack(fill=tk.X, pady=(18, 0))
             
@@ -529,7 +480,6 @@ if GUI_AVAILABLE:
             )
             clear_btn.pack(side=tk.LEFT)
             
-            # Info button
             info_btn = tk.Button(
                 button_frame,
                 text="ℹ️ Help",
@@ -959,12 +909,6 @@ TECHNICAL DETAILS:
 • Design Pattern: Pythonic elegance with built-in functions
 • Security: Implements "Gatekeeper Rule" validation
 
-DECODELABS CONTACT:
-📧 decodelabs.tech@gmail.com
-🌐 www.decodelabs.tech
-📱 +91 89330 06408
-📍 Greater Lucknow, India
-
 This tool is part of your journey to becoming a cybersecurity professional.
 Master the fundamentals, then advance to Project 2: Hashing & Encryption!
     """
@@ -1027,10 +971,6 @@ def main():
             print(f"\n❌ An error occurred: {e}\n")
             input("Press ENTER to continue...")
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-# APPLICATION ENTRY POINT
-# ═══════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
     main()
