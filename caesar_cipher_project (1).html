@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caesar Cipher - Confidentiality Logic | DecodeLabs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2f4a 100%);
+            color: #e0e6ed;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(10, 22, 40, 0.6);
+            border-radius: 15px;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(74, 144, 226, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        h1 {
+            font-size: 2.8em;
+            color: #4a90e2;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #8b9dc3;
+            position: relative;
+            z-index: 1;
+        }
+
+        .mission-statement {
+            background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(74, 144, 226, 0.05) 100%);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .mission-statement h2 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .mission-statement p {
+            color: #b8c5d6;
+            line-height: 1.6;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(10, 22, 40, 0.8);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(74, 144, 226, 0.6);
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.2);
+        }
+
+        .card h2 {
+            color: #4a90e2;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #8b9dc3;
+            font-weight: 500;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(26, 47, 74, 0.6);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 8px;
+            color: #e0e6ed;
+            font-size: 1em;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.3);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .shift-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 12px;
+            background: rgba(26, 47, 74, 0.6);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 8px;
+            color: #e0e6ed;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            background: rgba(74, 144, 226, 0.3);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(74, 144, 226, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .output-box {
+            background: rgba(26, 47, 74, 0.4);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 80px;
+            font-family: 'Courier New', monospace;
+            color: #4a90e2;
+            font-size: 1.1em;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        .visualization {
+            background: rgba(10, 22, 40, 0.8);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .visualization h2 {
+            color: #4a90e2;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .cipher-wheel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .wheel {
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+
+        .wheel-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid rgba(74, 144, 226, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wheel-inner {
+            width: 85%;
+            height: 85%;
+            border: 2px solid rgba(74, 144, 226, 0.3);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(74, 144, 226, 0.1) 0%, transparent 70%);
+        }
+
+        .wheel-letters {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .letter {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #4a90e2;
+            font-size: 0.9em;
+        }
+
+        .algorithm-steps {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .step {
+            background: rgba(26, 47, 74, 0.4);
+            border-left: 4px solid #4a90e2;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            color: #4a90e2;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .step-description {
+            color: #8b9dc3;
+            font-size: 0.9em;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: rgba(26, 47, 74, 0.4);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .info-card h3 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .info-card p {
+            color: #8b9dc3;
+            line-height: 1.6;
+        }
+
+        .warning {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .warning h3 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning p {
+            color: #ffb3b3;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #8b9dc3;
+            border-top: 1px solid rgba(74, 144, 226, 0.3);
+            margin-top: 50px;
+        }
+
+        .logo {
+            color: #4a90e2;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .cipher-wheel {
+                flex-direction: column;
+            }
+        }
+
+        .char-mapping {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .char-pair {
+            background: rgba(26, 47, 74, 0.6);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 8px;
+            padding: 10px 15px;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .original-char {
+            color: #8b9dc3;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .arrow {
+            color: #4a90e2;
+            margin: 5px 0;
+        }
+
+        .encrypted-char {
+            color: #4a90e2;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1> PROJECT 2: CONFIDENTIALITY LOGIC</h1>
+            <p class="subtitle">The Architecture of Basic Encryption & The Caesar Cipher</p>
+            <p class="subtitle" style="margin-top: 10px; font-size: 0.9em;">From Static Defense to Mathematical Protection</p>
+        </header>
+
+        <div class="mission-statement">
+            <h2>THE MISSION</h2>
+            <p><strong>Protecting Data in Transit</strong></p>
+            <p style="margin-top: 10px;">The Challenge: Data in motion cannot be protected by walls. It is exposed.</p>
+            <p>The Solution: Mathematical transformation. Rendering data unreadable to unauthorized eyes.</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2><span class="icon">E</span>ENCRYPTION ENGINE</h2>
+                
+                <label>Enter Your Plaintext Message:</label>
+                <textarea id="plaintext" placeholder="Type your secret message here...">HELLO WORLD</textarea>
+                
+                <label>Shift Key (Caesar Cipher):</label>
+                <div class="shift-control">
+                    <input type="number" id="shift-number" value="3" min="1" max="25">
+                    <input type="range" id="shift-slider" value="3" min="1" max="25">
+                    <span style="color: #4a90e2; font-weight: bold;">Key: <span id="shift-display">3</span></span>
+                </div>
+                
+                <button onclick="encrypt()"> ENCRYPT MESSAGE</button>
+                
+                <label style="margin-top: 20px;">Ciphertext (Encrypted Output):</label>
+                <div class="output-box" id="ciphertext-output">Your encrypted message will appear here...</div>
+                
+                <div id="encryption-mapping" class="char-mapping"></div>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">D</span>DECRYPTION ENGINE</h2>
+                
+                <label>Enter Ciphertext to Decrypt:</label>
+                <textarea id="ciphertext" placeholder="Paste encrypted text here...">KHOOR ZRUOG</textarea>
+                
+                <label>Shift Key (Must Match Encryption Key):</label>
+                <div class="shift-control">
+                    <input type="number" id="decrypt-shift-number" value="3" min="1" max="25">
+                    <input type="range" id="decrypt-shift-slider" value="3" min="1" max="25">
+                    <span style="color: #4a90e2; font-weight: bold;">Key: <span id="decrypt-shift-display">3</span></span>
+                </div>
+                
+                <button onclick="decrypt()"> DECRYPT MESSAGE</button>
+                
+                <label style="margin-top: 20px;">Plaintext (Decrypted Output):</label>
+                <div class="output-box" id="plaintext-output">Your decrypted message will appear here...</div>
+                
+                <div id="decryption-mapping" class="char-mapping"></div>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <h2>INPUT LOGIC: ASCII</h2>
+            <p style="text-align: center; color: #8b9dc3; margin-bottom: 20px;">Text must become numbers before it can become math.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <div style="display: inline-block; background: rgba(26, 47, 74, 0.6); padding: 30px; border-radius: 15px; border: 1px solid rgba(74, 144, 226, 0.3);">
+                    <div style="font-size: 4em; font-weight: bold; color: #e0e6ed; margin-bottom: 20px;">A</div>
+                    <div style="font-size: 2em; color: #4a90e2; margin-bottom: 10px;">→</div>
+                    <div style="font-size: 4em; font-weight: bold; color: #4a90e2; margin-bottom: 20px;">65</div>
+                    <div style="font-size: 2em; color: #4a90e2; margin-bottom: 10px;">→</div>
+                    <div style="font-size: 2em; font-family: 'Courier New', monospace; color: #4a90e2;">01000001</div>
+                </div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>A = 65</h3>
+                    <p>Capital letters start at ASCII 65</p>
+                </div>
+                <div class="info-card">
+                    <h3>a = 97</h3>
+                    <p>Lowercase letters start at ASCII 97</p>
+                </div>
+                <div class="info-card">
+                    <h3>Z = 90</h3>
+                    <p>Capital letters end at ASCII 90</p>
+                </div>
+                <div class="info-card">
+                    <h3>z = 122</h3>
+                    <p>Lowercase letters end at ASCII 122</p>
+                </div>
+            </div>
+            
+            <p style="text-align: center; color: #4a90e2; margin-top: 20px; font-style: italic;">
+                "We don't shift letters; we shift integers."
+            </p>
+        </div>
+
+        <div class="visualization">
+            <h2>THE BLUEPRINT: IPO MODEL</h2>
+            <p style="text-align: center; color: #8b9dc3; margin-bottom: 30px;">The universal architecture of cryptographic systems.</p>
+            
+            <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 30px;">
+                <div style="text-align: center;">
+                    <div style="width: 150px; height: 150px; border: 2px solid rgba(74, 144, 226, 0.5); border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(26, 47, 74, 0.4); margin-bottom: 15px;">
+                        <div style="font-size: 3em;">📄</div>
+                    </div>
+                    <h3 style="color: #8b9dc3; margin-bottom: 5px;">INPUT</h3>
+                    <p style="color: #8b9dc3;">Plaintext<br>(Raw Data)</p>
+                </div>
+                
+                <div style="font-size: 3em; color: #4a90e2;">→</div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 150px; height: 150px; border: 2px solid #4a90e2; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(74, 144, 226, 0.2); margin-bottom: 15px; box-shadow: 0 0 20px rgba(74, 144, 226, 0.3);">
+                        <div style="font-size: 3em;">⚙️</div>
+                    </div>
+                    <h3 style="color: #4a90e2; margin-bottom: 5px;">PROCESS</h3>
+                    <p style="color: #4a90e2;">Algorithm + Key</p>
+                </div>
+                
+                <div style="font-size: 3em; color: #4a90e2;">→</div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 150px; height: 150px; border: 2px solid rgba(74, 144, 226, 0.5); border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(26, 47, 74, 0.4); margin-bottom: 15px;">
+                        <div style="font-size: 3em;">🔒</div>
+                    </div>
+                    <h3 style="color: #8b9dc3; margin-bottom: 5px;">OUTPUT</h3>
+                    <p style="color: #8b9dc3;">Ciphertext<br>(Secured)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <h2>PROCESS LOGIC: THE SHIFT</h2>
+            <p style="text-align: center; color: #8b9dc3; margin-bottom: 20px;">Mono-alphabetic Substitution</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <div style="background: rgba(26, 47, 74, 0.6); padding: 30px; border-radius: 15px; border: 1px solid rgba(74, 144, 226, 0.3); display: inline-block;">
+                    <div style="font-size: 2.5em; color: #4a90e2; margin-bottom: 20px; font-family: 'Courier New', monospace;">
+                        E<sub style="font-size: 0.5em;">n</sub>(x) = (x + n)
+                    </div>
+                    <div style="color: #8b9dc3; margin-bottom: 10px;">x = Character Position</div>
+                    <div style="color: #8b9dc3;">n = Key (Shift)</div>
+                </div>
+            </div>
+            
+            <div class="algorithm-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Get Character</div>
+                        <div class="step-description">Extract each character from the plaintext message</div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">ASCII Conversion</div>
+                        <div class="step-description">Convert character to its ASCII numeric value (A = 65)</div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Subtract Base</div>
+                        <div class="step-description">Normalize to 0-25 range (ASCII - 65 → 0 for 'A')</div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Add Shift Key</div>
+                        <div class="step-description">Apply the shift transformation (position + shift)</div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-title">Modulo Operation</div>
+                        <div class="step-description">Wrap around alphabet using % 26 (handles overflow)</div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <div class="step-title">Add Base Back</div>
+                        <div class="step-description">Convert back to ASCII range (result + 65)</div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <div class="step-title">Convert to Character</div>
+                        <div class="step-description">Transform numeric value back to encrypted character</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <h2>THE MATH OF THE WRAP</h2>
+            <p style="text-align: center; color: #8b9dc3; margin-bottom: 20px;">Modular Arithmetic (%) handles the finite alphabet.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <div style="background: rgba(26, 47, 74, 0.6); padding: 30px; border-radius: 15px; border: 1px solid rgba(74, 144, 226, 0.3); display: inline-block;">
+                    <div style="font-size: 2.5em; color: #4a90e2; margin-bottom: 20px; font-family: 'Courier New', monospace;">
+                        E<sub style="font-size: 0.5em;">n</sub>(x) = (x + n) % 26
+                    </div>
+                    <div style="background: rgba(74, 144, 226, 0.1); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <div style="color: #4a90e2; margin-bottom: 10px; font-size: 1.2em;">Example: Input Y (24) + Shift (3) = 27</div>
+                        <div style="color: #8b9dc3;">27 % 26 = 1</div>
+                        <div style="color: #4a90e2; margin-top: 10px;">1 = B</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <h2>REVERSE ENGINEERING</h2>
+            <p style="text-align: center; color: #8b9dc3; margin-bottom: 20px;">Decryption Logic</p>
+            
+            <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 30px; margin: 30px 0;">
+                <div style="background: rgba(26, 47, 74, 0.6); padding: 20px; border-radius: 10px; border: 1px solid rgba(74, 144, 226, 0.3);">
+                    <div style="text-align: center; font-weight: bold; color: #8b9dc3; margin-bottom: 10px;">Plaintext</div>
+                </div>
+                
+                <div style="font-size: 2em; color: #4a90e2;">←</div>
+                
+                <div style="background: rgba(74, 144, 226, 0.2); padding: 20px; border-radius: 10px; border: 2px solid #4a90e2;">
+                    <div style="text-align: center; font-weight: bold; color: #4a90e2; margin-bottom: 10px;">Reverse Shift</div>
+                    <div style="text-align: center; color: #8b9dc3;">(− Key)</div>
+                </div>
+                
+                <div style="font-size: 2em; color: #4a90e2;">←</div>
+                
+                <div style="background: rgba(26, 47, 74, 0.6); padding: 20px; border-radius: 10px; border: 1px solid rgba(74, 144, 226, 0.3);">
+                    <div style="text-align: center; font-weight: bold; color: #8b9dc3; margin-bottom: 10px;">Ciphertext</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <div style="background: rgba(26, 47, 74, 0.6); padding: 30px; border-radius: 15px; border: 1px solid rgba(74, 144, 226, 0.3); display: inline-block;">
+                    <div style="font-size: 2.5em; color: #4a90e2; margin-bottom: 20px; font-family: 'Courier New', monospace;">
+                        D<sub style="font-size: 0.5em;">n</sub>(x) = (x − n) % 26
+                    </div>
+                </div>
+            </div>
+            
+            <p style="text-align: center; color: #4a90e2; margin-top: 20px; font-size: 1.2em;">
+                Symmetric Encryption: The same key locks and unlocks.
+            </p>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ THE VULNERABILITY</h3>
+            <p style="margin-bottom: 10px;"><strong>Why the Caesar Cipher is a lockbox, not a vault.</strong></p>
+            
+            <div style="margin-top: 20px;">
+                <p style="margin-bottom: 10px;"><strong>1. Tiny Key Space</strong> (25 keys = Instant Brute Force)</p>
+                <p style="margin-bottom: 10px;">With only 25 possible shift values, an attacker can try every key in seconds.</p>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <p style="margin-bottom: 10px;"><strong>2. Pattern Preservation</strong> (Frequency Analysis)</p>
+                <p style="margin-bottom: 10px;">Letter frequencies remain unchanged. In English, 'E' is most common - even when encrypted, the most frequent character is likely the shifted 'E'.</p>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <p style="margin-bottom: 10px;"><strong>3. No Authentication</strong></p>
+                <p>The cipher doesn't verify who encrypted the message, allowing message tampering.</p>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <h2>THE EVOLUTION</h2>
+            <p style="text-align: center; color: #8b9dc3; margin-bottom: 20px;">From Caesar to AES</p>
+            
+            <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 40px; margin: 30px 0;">
+                <div style="text-align: center;">
+                    <div style="width: 120px; height: 120px; border: 2px solid rgba(74, 144, 226, 0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(26, 47, 74, 0.4); margin: 0 auto 15px;">
+                        <div style="font-size: 2.5em;">🔓</div>
+                    </div>
+                    <h3 style="color: #8b9dc3; margin-bottom: 10px;">Caesar Cipher</h3>
+                    <p style="color: #8b9dc3; font-size: 0.9em;">Simple Shift</p>
+                </div>
+                
+                <div style="font-size: 3em; color: #4a90e2;">→</div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 120px; height: 120px; border: 2px solid #4a90e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(74, 144, 226, 0.1); margin: 0 auto 15px;">
+                        <div style="font-size: 2.5em;">🔐</div>
+                    </div>
+                    <h3 style="color: #4a90e2; margin-bottom: 10px;">Modern Encryption</h3>
+                    <p style="color: #4a90e2; font-size: 0.9em;">Confusion + Diffusion</p>
+                </div>
+                
+                <div style="font-size: 3em; color: #4a90e2;">→</div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 120px; height: 120px; border: 3px solid #4a90e2; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(74, 144, 226, 0.2); margin: 0 auto 15px; box-shadow: 0 0 30px rgba(74, 144, 226, 0.4);">
+                        <div style="font-size: 2.5em;">🛡️</div>
+                    </div>
+                    <h3 style="color: #4a90e2; margin-bottom: 10px;">AES</h3>
+                    <div style="color: #4a90e2; font-size: 0.9em; margin-bottom: 5px;">128-bit Keys</div>
+                    <div style="color: #8b9dc3; font-size: 0.8em;">XOR Operations</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; padding: 20px; background: rgba(74, 144, 226, 0.1); border-radius: 10px;">
+                <p style="color: #4a90e2; font-size: 1.1em;">
+                    "Master the logic of the shift, and you master the foundation of the shield."
+                </p>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <h2>PROJECT DELIVERABLES</h2>
+            <p style="text-align: center; color: #8b9dc3; margin-bottom: 30px;">Build the Enigma</p>
+            
+            <div class="algorithm-steps">
+                <div class="step">
+                    <div class="step-number">✓</div>
+                    <div class="step-content">
+                        <div class="step-title">Implement the IPO Cycle</div>
+                        <div class="step-description">Input → Process → Output architecture functional</div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">✓</div>
+                    <div class="step-content">
+                        <div class="step-title">Apply the Math: ord(), chr(), % 26</div>
+                        <div class="step-description">Character conversion and modular arithmetic working</div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">✓</div>
+                    <div class="step-content">
+                        <div class="step-title">Handle Edge Cases (Spaces/Punctuation)</div>
+                        <div class="step-description">Preserve non-alphabetic characters unchanged</div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">✓</div>
+                    <div class="step-content">
+                        <div class="step-title">Validate with Decryption Function</div>
+                        <div class="step-description">Symmetric encryption: same key decrypts correctly</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="logo">DecodeLabs</div>
+            <p style="margin-top: 10px;">Project 2: Confidentiality Logic - Caesar Cipher Implementation</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                "The absolute best way to master Cybersecurity is through hands-on practice, not just theory."
+            </p>
+            <p style="margin-top: 20px; color: #4a90e2;">
+                Your journey to becoming a professional security expert begins right here, right now.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        const shiftNumber = document.getElementById('shift-number');
+        const shiftSlider = document.getElementById('shift-slider');
+        const shiftDisplay = document.getElementById('shift-display');
+
+        shiftNumber.addEventListener('input', function() {
+            const value = Math.max(1, Math.min(25, parseInt(this.value) || 3));
+            this.value = value;
+            shiftSlider.value = value;
+            shiftDisplay.textContent = value;
+        });
+
+        shiftSlider.addEventListener('input', function() {
+            shiftNumber.value = this.value;
+            shiftDisplay.textContent = this.value;
+        });
+
+        const decryptShiftNumber = document.getElementById('decrypt-shift-number');
+        const decryptShiftSlider = document.getElementById('decrypt-shift-slider');
+        const decryptShiftDisplay = document.getElementById('decrypt-shift-display');
+
+        decryptShiftNumber.addEventListener('input', function() {
+            const value = Math.max(1, Math.min(25, parseInt(this.value) || 3));
+            this.value = value;
+            decryptShiftSlider.value = value;
+            decryptShiftDisplay.textContent = value;
+        });
+
+        decryptShiftSlider.addEventListener('input', function() {
+            decryptShiftNumber.value = this.value;
+            decryptShiftDisplay.textContent = this.value;
+        });
+
+        function caesarEncrypt(text, shift) {
+            let result = '';
+            
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                
+                if (char >= 'A' && char <= 'Z') {
+                    let charCode = char.charCodeAt(0);
+                    
+                    let position = charCode - 65;
+                    
+                    let shiftedPosition = position + shift;
+
+                    let wrappedPosition = shiftedPosition % 26;
+                    
+                    let newCharCode = wrappedPosition + 65;
+                    
+                    result += String.fromCharCode(newCharCode);
+                }
+                else if (char >= 'a' && char <= 'z') {
+                    let charCode = char.charCodeAt(0);
+                    let position = charCode - 97; 
+                    let shiftedPosition = position + shift;
+                    let wrappedPosition = shiftedPosition % 26;
+                    let newCharCode = wrappedPosition + 97;
+                    result += String.fromCharCode(newCharCode);
+                }
+                // Preserve spaces, numbers, and punctuation
+                else {
+                    result += char;
+                }
+            }
+            
+            return result;
+        }
+
+        function caesarDecrypt(text, shift) {
+            let result = '';
+            
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                
+                if (char >= 'A' && char <= 'Z') {
+                    let charCode = char.charCodeAt(0);
+                    let position = charCode - 65;
+                    
+                    let shiftedPosition = position - shift;
+                    
+                    let wrappedPosition = (shiftedPosition % 26 + 26) % 26;
+                    
+                    let newCharCode = wrappedPosition + 65;
+                    result += String.fromCharCode(newCharCode);
+                }
+                else if (char >= 'a' && char <= 'z') {
+                    let charCode = char.charCodeAt(0);
+                    let position = charCode - 97;
+                    let shiftedPosition = position - shift;
+                    let wrappedPosition = (shiftedPosition % 26 + 26) % 26;
+                    let newCharCode = wrappedPosition + 97;
+                    result += String.fromCharCode(newCharCode);
+                }
+                else {
+                    result += char;
+                }
+            }
+            
+            return result;
+        }
+
+        function showCharacterMapping(original, encrypted, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            const displayLength = Math.min(10, original.length);
+            
+            for (let i = 0; i < displayLength; i++) {
+                if (original[i] !== ' ' && /[a-zA-Z]/.test(original[i])) {
+                    const charPair = document.createElement('div');
+                    charPair.className = 'char-pair';
+                    charPair.innerHTML = `
+                        <div class="original-char">${original[i]}</div>
+                        <div class="arrow">↓</div>
+                        <div class="encrypted-char">${encrypted[i]}</div>
+                    `;
+                    container.appendChild(charPair);
+                }
+            }
+            
+            if (original.length > displayLength) {
+                const more = document.createElement('div');
+                more.className = 'char-pair';
+                more.innerHTML = '<div class="encrypted-char">...</div>';
+                container.appendChild(more);
+            }
+        }
+
+        function encrypt() {
+            const plaintext = document.getElementById('plaintext').value;
+            const shift = parseInt(document.getElementById('shift-number').value);
+            
+            if (!plaintext.trim()) {
+                alert('Please enter a message to encrypt!');
+                return;
+            }
+            
+            const ciphertext = caesarEncrypt(plaintext, shift);
+            document.getElementById('ciphertext-output').textContent = ciphertext;
+            
+            document.getElementById('ciphertext').value = ciphertext;
+            
+            showCharacterMapping(plaintext, ciphertext, 'encryption-mapping');
+        }
+
+        // Decrypt button handler
+        function decrypt() {
+            const ciphertext = document.getElementById('ciphertext').value;
+            const shift = parseInt(document.getElementById('decrypt-shift-number').value);
+            
+            if (!ciphertext.trim()) {
+                alert('Please enter ciphertext to decrypt!');
+                return;
+            }
+            
+            const plaintext = caesarDecrypt(ciphertext, shift);
+            document.getElementById('plaintext-output').textContent = plaintext;
+            
+            showCharacterMapping(ciphertext, plaintext, 'decryption-mapping');
+        }
+
+        window.addEventListener('load', function() {
+            encrypt();
+        });
+
+        document.getElementById('plaintext').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                encrypt();
+            }
+        });
+
+        document.getElementById('ciphertext').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                decrypt();
+            }
+        });
+    </script>
+</body>
+</html>
